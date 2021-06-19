@@ -11,6 +11,10 @@ interface IGameCurrencyFactory {
         returns (address);
 }
 
+interface IGameCurrency {
+    function mint(address to, uint256 amount) external;
+}
+
 contract GameCurrency is ERC20, AccessControl {
     constructor(
         string memory _name,
@@ -58,10 +62,12 @@ contract TheGame is AccessControl {
         uint8 initialOdds,
         uint256 roundDuration
     ) {
-        //TODO: setup admin role
-        //TODO: Create token
-        //TODO: mint startingTokens for each player
-        //TODO: mint startingTokens*_players.length for this contract
+        _setupRole(DEFAULT_ADMIN_ROLE, _tableAdmin);
+        gameCurrencyAddress = IGameCurrencyFactory(_gameCurrencyFactoryAddress).createToken("NAME", "SYMBOL");
+        for (uint256 i = 0; i< _players.length; i++){
+            IGameCurrency(gameCurrencyAddress).mint(_players[i], startingTokens);
+        }
+        IGameCurrency(gameCurrencyAddress).mint(address(this), startingTokens*_players.length);
         //TODO: setup player roles
         //TODO: setup initial state
         //TODO: setup first round for _players[0]
